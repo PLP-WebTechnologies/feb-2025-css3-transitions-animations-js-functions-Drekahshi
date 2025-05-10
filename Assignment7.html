@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Environment Awareness & localStorage</title>
+    <style>
+        /* Basic Styling */
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transition for theme change */
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* Theme Styling */
+        body.dark-mode {
+            background-color: #333;
+            color: #f4f4f4;
+        }
+
+        body.dark-mode .container {
+            background-color: #444;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+
+        body.dark-mode button {
+            background-color: #555;
+            color: #f4f4f4;
+            border-color: #666;
+        }
+        body.dark-mode button:hover {
+            background-color: #666;
+        }
+
+        /* Button Styling and Transition */
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+            /* CSS Transition for smooth hover effect */
+            transition: background-color 0.3s ease, transform 0.2s ease-out;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        button:active {
+            transform: translateY(0px); /* Push down on click */
+        }
+
+        /* Image Styling */
+        .animated-image {
+            width: 150px;
+            height: 100px;
+            background-color: #ddd; /* Placeholder for an image */
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* CSS Keyframe Animation */
+        @keyframes pulseAnimation {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 15px rgba(0, 123, 255, 0.7);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+            }
+        }
+
+        /* Class to apply the animation */
+        .pulse {
+            animation-name: pulseAnimation;
+            animation-duration: 1.5s;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite; /* Remove if you want it to play once per click */
+        }
+
+        /* Another animation for demonstration - triggered by JS */
+        @keyframes shakeAnimation {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+
+        .shake {
+            animation-name: shakeAnimation;
+            animation-duration: 0.5s;
+            animation-timing-function: ease-in-out;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Environment Awareness & localStorage</h1>
+
+        <button id="animateButton">Trigger Image Animation</button>
+        <button id="toggleThemeButton">Toggle Theme</button>
+
+        <div id="animatedElement" class="animated-image">
+            Save the Planet!
+        </div>
+
+        <h2>Preferences</h2>
+        <p>reduce , reuse , recycle.</p>
+    </div>
+
+    <script>
+        // --- DOMContentLoaded to ensure HTML is fully loaded ---
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const animateButton = document.getElementById('animateButton');
+            const animatedElement = document.getElementById('animatedElement');
+            const toggleThemeButton = document.getElementById('toggleThemeButton');
+
+            // --- localStorage for User Preferences ---
+
+            // Function to store a preference
+            function storePreference(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                    console.log(`Preference stored: ${key} = ${value}`);
+                } catch (e) {
+                    console.error("Error storing preference in localStorage:", e);
+                }
+            }
+
+            // Function to retrieve a preference
+            function getPreference(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    console.error("Error retrieving preference from localStorage:", e);
+                    return null;
+                }
+            }
+
+            // Apply stored theme preference on page load
+            function applyThemePreference() {
+                const currentTheme = getPreference('userTheme');
+                if (currentTheme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    toggleThemeButton.textContent = "Switch to Light Mode";
+                } else {
+                    document.body.classList.remove('dark-mode'); // Default to light
+                    toggleThemeButton.textContent = "Switch to Dark Mode";
+                }
+            }
+
+            // --- Animation Triggered by User Action ---
+
+            // Function to trigger an animation on an element
+            function triggerAnimation(element, animationClass) {
+                if (element) {
+                    // Remove the class first to allow re-triggering if animation is not infinite
+                    element.classList.remove(animationClass);
+                    void element.offsetWidth; // Trigger a reflow, hack to restart animation
+                    element.classList.add(animationClass);
+
+                    // Optional: Remove class after animation completes if it's not an infinite animation
+                    if (animationClass === 'shake') {
+                        element.addEventListener('animationend', () => {
+                            element.classList.remove(animationClass);
+                        }, { once: true });
+                    }
+                } else {
+                    console.warn("Element to animate not found.");
+                }
+            }
+
+            // Event listener for the animation button
+            if (animateButton) {
+                animateButton.addEventListener('click', () => {
+                    triggerAnimation(animatedElement, 'shake');
+                });
+            }
+
+            // Event listener for the theme toggle button
+            if (toggleThemeButton) {
+                toggleThemeButton.addEventListener('click', () => {
+                    document.body.classList.toggle('dark-mode');
+                    if (document.body.classList.contains('dark-mode')) {
+                        storePreference('userTheme', 'dark');
+                        toggleThemeButton.textContent = "Switch to Light Mode";
+                    } else {
+                        storePreference('userTheme', 'light');
+                        toggleThemeButton.textContent = "Switch to Dark Mode";
+                    }
+                });
+            }
+
+            // --- Initial Setup ---
+            applyThemePreference();
+
+            // Example of adding the 'pulse' animation by default to the element
+            if (animatedElement) {
+                 animatedElement.classList.add('pulse');
+            }
+
+        });
+    </script>
+
+</body>
+</html>
